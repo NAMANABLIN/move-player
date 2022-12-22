@@ -10,7 +10,7 @@ WHITE = pg.Color('WHITE')
 def load_level(filename):
     filename = os.path.join('levels', filename)
     if not os.path.isfile(filename):
-        print(f"Файл с уровнем '{filename}' не найден.\n Возможно этого уровня нет в папке 'levels'")
+        print(f"Файл с уровнем '{filename}' не найден.\nВсе уровни должны быть в папке 'levels'.")
         sys.exit()
     else:
         with open(filename, 'r') as mapFile:
@@ -89,6 +89,20 @@ class Tile(pg.sprite.Sprite):
             tile_width * pos_x, tile_height * pos_y)
 
 
+class Camera:
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - W // 2 + tile_width // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - H // 2 + tile_height // 2)
+
+
 def terminate():
     pg.quit()
     sys.exit()
@@ -145,7 +159,10 @@ if __name__ == '__main__':
     pg.init()
 
     size = W, H = 500, 500
-    pg.display.set_caption('Пемещение героя')
+
+    camera = Camera()
+
+    pg.display.set_caption('Перемещение героя. Камера')
     screen = pg.display.set_mode(size)
 
     clock = pg.time.Clock()
@@ -154,7 +171,6 @@ if __name__ == '__main__':
     running = True
 
     start_screen()
-
     while True:
         screen.fill(BLACK)
         for event in pg.event.get():
@@ -163,6 +179,9 @@ if __name__ == '__main__':
             if event.type == pg.KEYDOWN:
                 keys = pg.key.get_pressed()
                 player.move()
+        camera.update(player)
+        for sprite in all_sprites:
+            camera.apply(sprite)
         tiles_group.draw(screen)
         player_group.draw(screen)
 
