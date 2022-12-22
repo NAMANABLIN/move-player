@@ -145,7 +145,7 @@ if __name__ == '__main__':
     pg.init()
 
     size = W, H = 500, 500
-    pg.display.set_caption('Пемещение героя')
+    pg.display.set_caption('Перемещение героя. Дополнительные уровни')
     screen = pg.display.set_mode(size)
 
     clock = pg.time.Clock()
