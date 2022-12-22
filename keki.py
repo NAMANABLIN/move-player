@@ -8,9 +8,9 @@ WHITE = pg.Color('WHITE')
 
 
 def load_level(filename):
-    filename = os.path.join('data', filename)
+    filename = os.path.join('levels', filename)
     if not os.path.isfile(filename):
-        print(f"Файл с уровнем '{filename}' не найден.")
+        print(f"Файл с уровнем '{filename}' не найден.\n Возможно этого уровня нет в папке 'levels'")
         sys.exit()
     else:
         with open(filename, 'r') as mapFile:
@@ -139,7 +139,8 @@ if __name__ == '__main__':
     tiles_group = pg.sprite.Group()
     box_group = pg.sprite.Group()
 
-    player, level_x, level_y = generate_level(load_level('level.txt'))
+    a = input()
+    player, level_x, level_y = generate_level(load_level(a))
 
     pg.init()
 
