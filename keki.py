@@ -8,17 +8,22 @@ WHITE = pg.Color('WHITE')
 
 
 def load_level(filename):
-    filename = os.path.join('data', filename)
+    filename = os.path.join('levels', filename)
     if not os.path.isfile(filename):
-        print(f"Файл с уровнем '{filename}' не найден.")
+        print(f"Файл с уровнем '{filename}' не найден.\n Возможно этого уровня нет в папке 'levels'")
         sys.exit()
     else:
         with open(filename, 'r') as mapFile:
             level_map = [line.strip() for line in mapFile]
-
     max_width = max(map(len, level_map))
 
-    return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+    ans = []
+    for x in map(lambda x: x.ljust(max_width, '.'), level_map):
+        lol = []
+        for xx in x:
+            lol.append(xx)
+        ans.append(lol)
+    return ans[:-(len(ans) - len(level_map))] if len(level_map) != len(ans) else ans
 
 
 def load_image(name, colorkey=None):
@@ -53,29 +58,76 @@ class Player(pg.sprite.Sprite):
             tile_width * pos_x + 15, tile_height * pos_y + 5)
 
     def move(self):
+        a1 = a
+        p = False
         if keys[pg.K_RIGHT]:
             for x in box_group:
                 if x.rect.colliderect(self.rect.move(speed, 0)):
-                    return
-            self.rect.x += speed
-
-        if keys[pg.K_LEFT]:
+                    return a1, False
+            for x in a:
+                if '@' in x:
+                    aaaaaaa = x.index('@')
+                    if x[aaaaaaa + 1] == '.':
+                        x[aaaaaaa] = '.'
+                        x[aaaaaaa + 1] = '@'
+                        p = True
+            if p:
+                a1 = []
+                for x in a:
+                    plov = list(x[1:])
+                    plov.append(x[0])
+                    a1.append(plov)
+        elif keys[pg.K_LEFT]:
             for x in box_group:
                 if x.rect.colliderect(self.rect.move(-speed, 0)):
-                    return
-            self.rect.x -= speed
-
-        if keys[pg.K_DOWN]:
+                    return a1, False
+            for x in a:
+                if '@' in x:
+                    aaaaaaa = x.index('@')
+                    if x[aaaaaaa - 1] == '.':
+                        x[aaaaaaa] = '.'
+                        x[aaaaaaa - 1] = '@'
+                        p = True
+            if p:
+                a1 = []
+                for x in a:
+                    plov = list(x[-1])
+                    [plov.append(xx) for xx in x[:-1]]
+                    a1.append(plov)
+        elif keys[pg.K_DOWN]:
             for x in box_group:
                 if x.rect.colliderect(self.rect.move(0, speed)):
-                    return
-            self.rect.y += speed
-
-        if keys[pg.K_UP]:
+                    return a1, False
+            for i, x in enumerate(a):
+                if '@' in x:
+                    aaaaaaa = x.index('@')
+                    if a[i + 1][aaaaaaa] == '.':
+                        a[i][aaaaaaa] = '.'
+                        a[i + 1][aaaaaaa] = '@'
+                        p = True
+                        break
+            if p:
+                plov = a[1:]
+                plov.append(a[0])
+                a1 = plov
+        elif keys[pg.K_UP]:
             for x in box_group:
                 if x.rect.colliderect(self.rect.move(0, -speed)):
-                    return
-            self.rect.y -= speed
+                    return a1, False
+            for i, x in enumerate(a):
+                if '@' in x:
+                    aaaaaaa = x.index('@')
+                    if a[i - 1][aaaaaaa] == '.':
+                        a[i][aaaaaaa] = '.'
+                        a[i - 1][aaaaaaa] = '@'
+                        p = True
+                        break
+            if p:
+                plov = [a[-1]]
+                [plov.append(xx) for xx in a[:-1]]
+                a1 = plov
+
+        return a1, True
 
 
 class Tile(pg.sprite.Sprite):
@@ -139,12 +191,13 @@ if __name__ == '__main__':
     tiles_group = pg.sprite.Group()
     box_group = pg.sprite.Group()
 
-    player, level_x, level_y = generate_level(load_level('level.txt'))
+    a = load_level('level2.txt')
+    player, level_x, level_y = generate_level(a)
 
     pg.init()
 
     size = W, H = 500, 500
-    pg.display.set_caption('Пемещение героя')
+    pg.display.set_caption('Перемещение героя. Новый уровень')
     screen = pg.display.set_mode(size)
 
     clock = pg.time.Clock()
@@ -161,7 +214,12 @@ if __name__ == '__main__':
                 terminate()
             if event.type == pg.KEYDOWN:
                 keys = pg.key.get_pressed()
-                player.move()
+                a, a2 = player.move()
+                if a2:
+                    tiles_group.empty()
+                    box_group.empty()
+                    player_group.empty()
+                    player, level_x, level_y = generate_level(a)
         tiles_group.draw(screen)
         player_group.draw(screen)
 
